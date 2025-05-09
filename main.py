@@ -69,39 +69,58 @@ async def get_player_stats(name: str) -> dict:
 
 async def generate_player_summary(name: str, stats: dict) -> str:
     """Creates an AI-generated summary of the player's career and style"""
-    prompt = f"""Write a concise summary of {name}'s basketball career and playing style. 
-    Include their key strengths and notable achievements. Keep it under 200 words."""
+    stats_str = "\n".join([f"{k}: {v}" for k, v in stats.items()]) if stats else "No stats available"
     
-    response = co.generate(
-        prompt=prompt,
-        max_tokens=200,
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a knowledgeable basketball analyst. Provide concise, factual summaries of players' careers and playing styles."
+        },
+        {
+            "role": "user",
+            "content": f"""Write a concise summary of {name}'s basketball career and playing style. 
+            Include their key strengths and notable achievements. Keep it under 200 words.
+            
+            Player Stats:
+            {stats_str}"""
+        }
+    ]
+    
+    response = co.chat(
+        model='command-r-plus',
+        messages=messages,
         temperature=0.7,
-        k=0,
-        stop_sequences=[],
-        return_likelihoods='NONE'
+        max_tokens=200,
     )
     
-    return response.generations[0].text.strip()
+    return response.text.strip()
 
 async def generate_player_comparison(player1: str, player2: str) -> str:
     """Generates an AI comparison between two players"""
-    prompt = f"""Compare the playing styles and careers of {player1} and {player2}. 
-    Focus on their similarities and differences in terms of:
-    1. Playing style
-    2. Strengths and weaknesses
-    3. Career achievements
-    Keep the comparison balanced and objective. Limit to 300 words."""
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a knowledgeable basketball analyst. Provide balanced, objective comparisons between players."
+        },
+        {
+            "role": "user",
+            "content": f"""Compare the playing styles and careers of {player1} and {player2}. 
+            Focus on their similarities and differences in terms of:
+            1. Playing style
+            2. Strengths and weaknesses
+            3. Career achievements
+            Keep the comparison balanced and objective. Limit to 300 words."""
+        }
+    ]
     
-    response = co.generate(
-        prompt=prompt,
-        max_tokens=300,
+    response = co.chat(
+        model='command-r-plus',
+        messages=messages,
         temperature=0.7,
-        k=0,
-        stop_sequences=[],
-        return_likelihoods='NONE'
+        max_tokens=300,
     )
     
-    return response.generations[0].text.strip()
+    return response.text.strip()
 
 async def find_similar_players(name: str) -> List[dict]:
     """Returns a list of players similar to the given player"""
